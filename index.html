@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>かんじょうの たんごカード</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 1.5rem;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-teal-50/30 min-h-screen flex flex-col items-center justify-between p-4 font-sans text-slate-700 select-none">
+
+    <!-- Header -->
+    <header class="w-full max-w-md text-center pt-4 pb-2">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-wide flex items-center justify-center gap-2">
+            <span>😊</span>
+            <span>かんじょうの たんごカード</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">「しあわせ」抜きの感情単語集</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-md flex flex-col items-center justify-center my-auto">
+        
+        <!-- Progress Bar & Counter -->
+        <div class="w-full flex items-center justify-between px-2 mb-3 text-xs font-semibold text-slate-500">
+            <span id="card-counter">1 / 10</span>
+            <div class="w-2/3 bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-teal-500 h-full w-1/10 transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <!-- Flashcard -->
+        <div id="card-container" class="flip-card w-full h-72 mb-6">
+            <div class="flip-card-inner" id="card-inner" onclick="toggleFlip()">
+                <!-- Front Side -->
+                <div class="flip-card-front bg-white border-2 border-teal-400">
+                    <span class="text-xs uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full font-bold mb-4">Japanese</span>
+                    <span id="word-jp" class="text-4xl sm:text-5xl font-black text-slate-800 mb-3">うれしい</span>
+                    <span id="word-romaji" class="text-lg text-rose-500 font-semibold mb-4">ureshii</span>
+                    
+                    <button onclick="speakText(event, 'jp')" class="mt-2 w-10 h-10 rounded-full bg-teal-50 hover:bg-teal-100 text-teal-600 flex items-center justify-center transition-colors shadow-sm active:scale-95" title="音声を聴く">
+                        <i class="fa-solid fa-volume-high text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Back Side -->
+                <div class="flip-card-back bg-teal-600 text-white border-2 border-teal-500">
+                    <span class="text-xs uppercase tracking-wider text-teal-200 bg-teal-700/50 px-2.5 py-1 rounded-full font-bold mb-4">English</span>
+                    <span id="word-en" class="text-3xl font-extrabold mb-4">happy / glad</span>
+                    
+                    <button onclick="speakText(event, 'en')" class="mt-2 w-10 h-10 rounded-full bg-teal-500 hover:bg-teal-400 text-white flex items-center justify-center transition-colors shadow-sm active:scale-95" title="Listen to English">
+                        <i class="fa-solid fa-volume-high text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="w-full flex items-center justify-between gap-3">
+            <button onclick="prevCard()" class="flex-1 py-3 px-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 active:bg-slate-100 transition-all shadow-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-arrow-left text-sm"></i>
+                <span>まえへ</span>
+            </button>
+            
+            <button onclick="shuffleCards()" class="p-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-bold hover:bg-slate-50 active:bg-slate-100 transition-all shadow-sm" title="シャッフル">
+                <i class="fa-solid fa-shuffle"></i>
+            </button>
+
+            <button onclick="nextCard()" class="flex-1 py-3 px-4 bg-teal-500 text-white rounded-xl font-bold hover:bg-teal-600 active:bg-teal-700 transition-all shadow-md flex items-center justify-center gap-2">
+                <span>つぎへ</span>
+                <i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Hint -->
+        <p class="text-xs text-slate-400 mt-6 flex items-center gap-1">
+            <i class="fa-regular fa-lightbulb text-amber-400"></i>
+            カードをタップすると うらがえります
+        </p>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-400 py-2">
+        Emotion Flashcards • ひらがな学習
+    </footer>
+
+    <script>
+        // 「しあわせ」を除外した10個の単語リスト
+        const originalWords = [
+            { jp: "うれしい", romaji: "ureshii", en: "happy / glad" },
+            { jp: "たのしい", romaji: "tanoshii", en: "fun / enjoyable" },
+            { jp: "かなしい", romaji: "kanashii", en: "sad" },
+            { jp: "さびしい", romaji: "sabishii", en: "lonely" },
+            { jp: "つらい", romaji: "tsurai", en: "painful" },
+            { jp: "がっかり", romaji: "gakkari", en: "disappointed" },
+            { jp: "たいへん", romaji: "taihen", en: "tough" },
+            { jp: "はずかしい", romaji: "hazukashii", en: "embarrassed / shy" },
+            { jp: "こわい", romaji: "kowai", en: "scared / scary" },
+            { jp: "しんぱい", romaji: "shinpai", en: "worried / anxious" }
+        ];
+
+        let words = [...originalWords];
+        let currentIndex = 0;
+
+        function toggleFlip() {
+            const container = document.getElementById('card-container');
+            container.classList.toggle('flipped');
+        }
+
+        function updateCard() {
+            const container = document.getElementById('card-container');
+            container.classList.remove('flipped');
+            
+            setTimeout(() => {
+                const current = words[currentIndex];
+                document.getElementById('word-jp').textContent = current.jp;
+                document.getElementById('word-romaji').textContent = current.romaji;
+                document.getElementById('word-en').textContent = current.en;
+                
+                // UIアップデート
+                document.getElementById('card-counter').textContent = `${currentIndex + 1} / ${words.length}`;
+                document.getElementById('progress-bar').style.width = `${((currentIndex + 1) / words.length) * 100}%`;
+            }, 150);
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % words.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + words.length) % words.length;
+            updateCard();
+        }
+
+        function shuffleCards() {
+            // フィッシャー–イェーツのシャッフル
+            for (let i = words.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [words[i], words[j]] = [words[j], words[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // 音声読み上げ機能 (Web Speech API)
+        function speakText(event, lang) {
+            event.stopPropagation(); // カードが裏返るのを防ぐ
+
+            if ('speechSynthesis' in window) {
+                const current = words[currentIndex];
+                const text = lang === 'jp' ? current.jp : current.en;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang === 'jp' ? 'ja-JP' : 'en-US';
+                utterance.rate = 0.9; // 少しゆっくりめに再生
+                
+                window.speechSynthesis.cancel(); // 前の発話をキャンセル
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // キーボード操作対応
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextCard();
+            if (e.key === 'ArrowLeft') prevCard();
+            if (e.key === ' ') {
+                e.preventDefault();
+                toggleFlip();
+            }
+        });
+
+        // 初期化
+        updateCard();
+    </script>
+</body>
+</html>
